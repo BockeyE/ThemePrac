@@ -1,11 +1,15 @@
 package com.fluxdemo.fluxdemo.controller;
 
+import com.fluxdemo.fluxdemo.exceptions.TweetNotFoundException;
 import com.fluxdemo.fluxdemo.model.Tweet;
+import com.fluxdemo.fluxdemo.payload.ErrorResponse;
 import com.fluxdemo.fluxdemo.repository.TweetRepository;
 import com.sun.deploy.nativesandbox.comm.Response;
 import com.sun.deploy.net.HttpResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -58,5 +62,36 @@ public class TweetController {
                 );
     }
 
+    @DeleteMapping("/tweets/{id}")
+    public Mono<ResponseEntity<Void>> deleteTweet(
+            @PathVariable(value = "id") String id
+    ) {
+        return tweetRepository.findById(id)
+                .flatMap(existingTweet -> tweetRepository.delete(existingTweet)
+                        .then(Mono.just(new ResponseEntity<Void>(HttpStatus.OK))))
+                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
 
+    // Tweets are Sent to the client as Server Sent Events
+    @GetMapping(value = "/stream/tweets", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<Tweet> streamAllTweets() {
+        return tweetRepository.findAll();
+    }
+
+
+
+
+    /*
+        Exception Handling Examples (These can be put into a @ControllerAdvice to handle exceptions globally)
+    */
+
+    @ExceptionHandler(DuplicateKeyException.class)
+    public ResponseEntity handleDuplicateKeyException(DuplicateKeyException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse("A Tweet with the same text already exists"));
+    }
+
+    @ExceptionHandler(TweetNotFoundException.class)
+    public ResponseEntity handleTweetNotFoundException(TweetNotFoundException ex) {
+        return ResponseEntity.notFound().build();
+    }
 }
