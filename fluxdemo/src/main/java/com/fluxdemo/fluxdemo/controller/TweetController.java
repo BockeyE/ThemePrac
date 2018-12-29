@@ -33,7 +33,9 @@ public class TweetController {
 
     @GetMapping("/tweets/{id}")
     public Mono<ResponseEntity<Tweet>> getTweetById(@PathVariable(value = "id") String id) {
-        return null;
+        return tweetRepository.findById(id)
+                .map(savedTweet -> ResponseEntity.ok(savedTweet))
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
 }
