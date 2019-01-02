@@ -16,8 +16,6 @@ import java.util.Date;
  */
 @Data
 @Document(collection = "tweets")
-@AllArgsConstructor
-@NoArgsConstructor
 public class Tweet {
     @Id
     private String id;
@@ -29,4 +27,11 @@ public class Tweet {
     @NotNull
     private Date createdAt = new Date();
 
+    public Tweet() {
+    }
+
+    public Tweet(String id, @NotBlank @Size(max = 140) String text) {
+        this.id = id;
+        this.text = text;
+    }
 }
