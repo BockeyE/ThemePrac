@@ -95,4 +95,15 @@ class ListNode {
         System.out.println(listNode.next.val);
         System.out.println(listNode.next.next.val);
     }
+    /**
+     * 土思路解法
+     * 先在外部计算一次，如果有进位，则promote量为1，否则为0.
+     * 之后进入循环，循环里，最外部先判断l1l2是否都为null；如果是，在判断一下
+     * promote是否进位，如果进位，则new一个节点1在最头上。
+     * 在非null时，进入主循环，
+     * new一个节点，如果有promote，则先把其基准值设为1.
+     * 然后去l1或者l2，不为null的部分，加到tem中间量中，再加到节点值里。
+     * 如果进位，则改变promote为1，然后取余设置值，
+     * 这样一个节点就设置完成，进入下一次循环
+     */
 }
